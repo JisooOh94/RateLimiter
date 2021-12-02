@@ -80,4 +80,21 @@ location ~ ^/delay/(.+) {
     * [document](https://www.nginx.com/blog/rate-limiting-nginx/#Two-Stage-Rate-Limiting) 에 따르면 delay 로 설정한 수의 request 는 nodelay 로 바로 WAS 로 프록시, 그를 초과하는 요청은 delay 되어 WAS로 프록시 된다고 설명되어있으나 테스트 결과 WAS 로 프록시 없이 모든 요청에 바로 429 에러 응답
     * 추가적인 분석 필요
 
+### dry run
+* nginx config
+```
+limit_req_zone $binary_remote_addr zone=myzone:10m rate=12r/m;
+limit_req_dry_run on;
+```
+
+* 테스트 결과
+    * client log
+    ![image](https://user-images.githubusercontent.com/48702893/144350619-c2e11212-8c1e-4c91-b5e7-46366c3ddd3e.png)
+    * nginx log
+    ![image](https://user-images.githubusercontent.com/48702893/144350628-45dc266b-dc13-45ce-b030-05f15ba057fe.png)
+    
+* 결론
+    * dry run mode 는 rate 설정을 통한 제한 수행하지 않음 > request 큐에 들어오는 즉시 WAS 로 프록시 되기떄문에, request 큐도 의미가 없어지고 rate limiting 이 되지 않음
+    * 식별버퍼로 설정한 메모리 공간이 가득 찼을때에만 에러 응답
+
  
